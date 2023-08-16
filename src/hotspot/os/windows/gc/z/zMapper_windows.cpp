@@ -56,7 +56,7 @@
 // reserved available address space can (and will) coalesce placeholders, but
 // they will be split before being used.
 
-#define fatal_error(msg, addr, size)                   \
+#define fatal_error(msg, addr, size)                  \
   fatal(msg ": " PTR_FORMAT " " SIZE_FORMAT "M (%ld)", \
         (addr), (size) / M, GetLastError())
 
