@@ -195,12 +195,12 @@ struct PreserveLastError {
 static LPVOID virtualAlloc(LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect) {
   LPVOID result = ::VirtualAlloc(lpAddress, dwSize, flAllocationType, flProtect);
   if (result != nullptr) {
-    log_trace(os)("VirtualAlloc(" INTPTR_FORMAT ", " SIZE_FORMAT ", %lx, %lx) returned " PTR_FORMAT "%s.",
+    log_trace(os)("VirtualAlloc(" PTR_FORMAT ", " SIZE_FORMAT ", %lx, %lx) returned " PTR_FORMAT "%s.",
                   p2i(lpAddress), dwSize, flAllocationType, flProtect, p2i(result),
                   ((lpAddress != nullptr && result != lpAddress) ? " <different base!>" : ""));
   } else {
     PreserveLastError ple;
-    log_info(os)("VirtualAlloc(" INTPTR_FORMAT ", " SIZE_FORMAT ", %lx, %lx) failed (%lu).",
+    log_info(os)("VirtualAlloc(" PTR_FORMAT ", " SIZE_FORMAT ", %lx, %lx) failed (%lu).",
                   p2i(lpAddress), dwSize, flAllocationType, flProtect, ple.v);
   }
   return result;
@@ -225,12 +225,12 @@ static LPVOID virtualAllocExNuma(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSiz
                                  DWORD  flProtect, DWORD  nndPreferred) {
   LPVOID result = ::VirtualAllocExNuma(hProcess, lpAddress, dwSize, flAllocationType, flProtect, nndPreferred);
   if (result != nullptr) {
-    log_trace(os)("VirtualAllocExNuma(" INTPTR_FORMAT ", " SIZE_FORMAT ", %lx, %lx, %lx) returned " PTR_FORMAT "%s.",
+    log_trace(os)("VirtualAllocExNuma(" PTR_FORMAT ", " SIZE_FORMAT ", %lx, %lx, %lx) returned " PTR_FORMAT "%s.",
                   p2i(lpAddress), dwSize, flAllocationType, flProtect, nndPreferred, p2i(result),
                   ((lpAddress != nullptr && result != lpAddress) ? " <different base!>" : ""));
   } else {
     PreserveLastError ple;
-    log_info(os)("VirtualAllocExNuma(" INTPTR_FORMAT ", " SIZE_FORMAT ", %lx, %lx, %lx) failed (%lu).",
+    log_info(os)("VirtualAllocExNuma(" PTR_FORMAT ", " SIZE_FORMAT ", %lx, %lx, %lx) failed (%lu).",
                  p2i(lpAddress), dwSize, flAllocationType, flProtect, nndPreferred, ple.v);
   }
   return result;
@@ -247,7 +247,7 @@ static LPVOID mapViewOfFileEx(HANDLE hFileMappingObject, DWORD  dwDesiredAccess,
                   ((lpBaseAddress != nullptr && result != lpBaseAddress) ? " <different base!>" : ""));
   } else {
     PreserveLastError ple;
-    log_info(os)("MapViewOfFileEx(" INTPTR_FORMAT ", " SIZE_FORMAT ") failed (%lu).",
+    log_info(os)("MapViewOfFileEx(" PTR_FORMAT ", " SIZE_FORMAT ") failed (%lu).",
                  p2i(lpBaseAddress), dwNumberOfBytesToMap, ple.v);
   }
   return result;
@@ -257,10 +257,10 @@ static LPVOID mapViewOfFileEx(HANDLE hFileMappingObject, DWORD  dwDesiredAccess,
 static BOOL unmapViewOfFile(LPCVOID lpBaseAddress) {
   BOOL result = ::UnmapViewOfFile(lpBaseAddress);
   if (result != FALSE) {
-    log_trace(os)("UnmapViewOfFile(" INTPTR_FORMAT ") succeeded", p2i(lpBaseAddress));
+    log_trace(os)("UnmapViewOfFile(" PTR_FORMAT ") succeeded", p2i(lpBaseAddress));
   } else {
     PreserveLastError ple;
-    log_info(os)("UnmapViewOfFile(" INTPTR_FORMAT ") failed (%lu).",  p2i(lpBaseAddress), ple.v);
+    log_info(os)("UnmapViewOfFile(" PTR_FORMAT ") failed (%lu).",  p2i(lpBaseAddress), ple.v);
   }
   return result;
 }
@@ -1024,7 +1024,7 @@ jlong offset() {
   java_origin.wMilliseconds  = 0;
   FILETIME jot;
   if (!SystemTimeToFileTime(&java_origin, &jot)) {
-    fatal("Error = %d\nWindows error", GetLastError());
+    fatal("Error = %ld\nWindows error", GetLastError());
   }
   _calculated_offset = jlong_from(jot.dwHighDateTime, jot.dwLowDateTime);
   _has_calculated_offset = 1;
@@ -1520,7 +1520,7 @@ static int _print_module(const char* fname, address base_address,
 
   outputStream* st = (outputStream*)param;
 
-  st->print(INTPTR_FORMAT " - " INTPTR_FORMAT " \t%s\n", p2i(base_address), p2i(top_address), fname);
+  st->print(PTR_FORMAT " - " PTR_FORMAT " \t%s\n", p2i(base_address), p2i(top_address), fname);
   return 0;
 }
 
@@ -3553,7 +3553,7 @@ static void warn_fail_commit_memory(char* addr, size_t bytes, bool exec) {
   int err = os::get_last_error();
   char buf[256];
   size_t buf_len = os::lasterror(buf, sizeof(buf));
-  warning("INFO: os::commit_memory(" INTPTR_FORMAT ", " SIZE_FORMAT
+  warning("INFO: os::commit_memory(" PTR_FORMAT ", " SIZE_FORMAT
           ", %d) failed; error='%s' (DOS error/errno=%d)", p2i(addr), bytes,
           exec, buf_len != 0 ? buf : "<no_error_string>", err);
 }
@@ -3784,7 +3784,7 @@ bool os::protect_memory(char* addr, size_t bytes, ProtType prot,
     char buf[256];
     size_t buf_len = os::lasterror(buf, sizeof(buf));
     warning("INFO: os::protect_memory(" PTR_FORMAT ", " SIZE_FORMAT
-          ") failed; error='%s' (DOS error/errno=%d)", addr, bytes,
+          ") failed; error='%s' (DOS error/errno=%d)", p2i(addr), bytes,
           buf_len != 0 ? buf : "<no_error_string>", err);
   }
 #endif
@@ -5572,7 +5572,7 @@ bool os::find(address addr, outputStream* st) {
   bool result = false;
   char buf[256];
   if (os::dll_address_to_library_name(addr, buf, sizeof(buf), &offset)) {
-    st->print(INTPTR_FORMAT " ", p2i(addr));
+    st->print(PTR_FORMAT " ", p2i(addr));
     if (strlen(buf) < sizeof(buf) - 1) {
       char* p = strrchr(buf, '\\');
       if (p) {

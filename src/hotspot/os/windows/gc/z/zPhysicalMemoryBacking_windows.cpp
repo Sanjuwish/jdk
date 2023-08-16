@@ -157,10 +157,10 @@ public:
     size_t npages_res = npages;
     const bool res = AllocateUserPhysicalPages(ZAWESection, &npages_res, &_page_array[index]);
     if (!res) {
-      fatal("Failed to allocate physical memory " SIZE_FORMAT "M @ " INTPTR_FORMAT " (%ld)",
+      fatal("Failed to allocate physical memory " SIZE_FORMAT "M @ " PTR_FORMAT " (%ld)",
             size / M, untype(offset), GetLastError());
     } else {
-      log_debug(gc)("Allocated physical memory: " SIZE_FORMAT "M @ " INTPTR_FORMAT, size / M, untype(offset));
+      log_debug(gc)("Allocated physical memory: " SIZE_FORMAT "M @ " PTR_FORMAT, size / M, untype(offset));
     }
 
     // AllocateUserPhysicalPages might not be able to allocate the requested amount of memory.
@@ -175,7 +175,7 @@ public:
     size_t npages_res = npages;
     const bool res = FreeUserPhysicalPages(ZAWESection, &npages_res, &_page_array[index]);
     if (!res) {
-      fatal("Failed to uncommit physical memory " SIZE_FORMAT "M @ " INTPTR_FORMAT " (%ld)",
+      fatal("Failed to uncommit physical memory " SIZE_FORMAT "M @ " PTR_FORMAT " (%ld)",
             size, untype(offset), GetLastError());
     }
 
@@ -188,7 +188,7 @@ public:
 
     const bool res = MapUserPhysicalPages((char*)untype(addr), npages, &_page_array[index]);
     if (!res) {
-      fatal("Failed to map view " INTPTR_FORMAT " " SIZE_FORMAT "M @ " INTPTR_FORMAT " (%ld)",
+      fatal("Failed to map view " PTR_FORMAT " " SIZE_FORMAT "M @ " PTR_FORMAT " (%ld)",
             untype(addr), size / M, untype(offset), GetLastError());
     }
   }
@@ -198,8 +198,8 @@ public:
 
     const bool res = MapUserPhysicalPages((char*)untype(addr), npages, nullptr);
     if (!res) {
-      fatal("Failed to unmap view " INTPTR_FORMAT " " SIZE_FORMAT "M (%ld)",
-            untype(addr), size / M, GetLastError());
+      fatal("Failed to unmap view " PTR_FORMAT " " SIZE_FORMAT "M (%ld)",
+            static_cast<uintptr_t>(addr), size / M, GetLastError());
     }
   }
 };
@@ -239,7 +239,7 @@ size_t ZPhysicalMemoryBacking::uncommit(zoffset offset, size_t length) {
 
 void ZPhysicalMemoryBacking::map(zaddress_unsafe addr, size_t size, zoffset offset) const {
   assert(is_aligned(untype(offset), ZGranuleSize), "Misaligned: " PTR_FORMAT, untype(offset));
-  assert(is_aligned(untype(addr), ZGranuleSize), "Misaligned: " PTR_FORMAT, addr);
+  assert(is_aligned(untype(addr), ZGranuleSize), "Misaligned: " PTR_FORMAT, static_cast<uintptr_t>(addr));
   assert(is_aligned(size, ZGranuleSize), "Misaligned: " PTR_FORMAT, size);
 
   _impl->map(addr, size, offset);

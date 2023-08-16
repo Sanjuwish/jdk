@@ -56,8 +56,8 @@
 // reserved available address space can (and will) coalesce placeholders, but
 // they will be split before being used.
 
-#define fatal_error(msg, addr, size)                      \
-  fatal(msg ": " INTPTR_FORMAT " " SIZE_FORMAT "M (%ld)", \
+#define fatal_error(msg, addr, size)                   \
+  fatal(msg ": " PTR_FORMAT " " SIZE_FORMAT "M (%ld)", \
         (addr), (size) / M, GetLastError())
 
 zaddress_unsafe ZMapper::reserve(zaddress_unsafe addr, size_t size) {
@@ -251,7 +251,7 @@ void ZMapper::unreserve_for_shared_awe(zaddress_unsafe addr, size_t size) {
     );
 
   if (!res) {
-    fatal("Failed to unreserve memory: " INTPTR_FORMAT " " SIZE_FORMAT "M (%ld)",
+    fatal("Failed to unreserve memory: " PTR_FORMAT " " SIZE_FORMAT "M (%ld)",
           untype(addr), size / M, GetLastError());
   }
 }
@@ -264,7 +264,7 @@ void ZMapper::split_placeholder(zaddress_unsafe addr, size_t size) {
     );
 
   if (!res) {
-    fatal_error("Failed to split placeholder", untype(addr), size);
+    fatal_error("Failed to split placeholder", static_cast<uintptr_t>(addr), size);
   }
 }
 

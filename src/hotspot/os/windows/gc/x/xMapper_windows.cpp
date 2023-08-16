@@ -55,8 +55,8 @@
 // reserved available address space can (and will) coalesce placeholders, but
 // they will be split before being used.
 
-#define fatal_error(msg, addr, size)                      \
-  fatal(msg ": " INTPTR_FORMAT " " SIZE_FORMAT "M (%ld)", \
+#define fatal_error(msg, addr, size)                   \
+  fatal(msg ": " PTR_FORMAT " " SIZE_FORMAT "M (%ld)", \
         (addr), (size) / M, GetLastError())
 
 uintptr_t XMapper::reserve(uintptr_t addr, size_t size) {
@@ -250,7 +250,7 @@ void XMapper::unreserve_for_shared_awe(uintptr_t addr, size_t size) {
     );
 
   if (!res) {
-    fatal("Failed to unreserve memory: " INTPTR_FORMAT " " SIZE_FORMAT "M (%ld)",
+    fatal("Failed to unreserve memory: " PTR_FORMAT " " SIZE_FORMAT "M (%ld)",
           addr, size / M, GetLastError());
   }
 }
